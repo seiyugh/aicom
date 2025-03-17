@@ -30,39 +30,10 @@ export function AppSidebar() {
     return pathname === path || pathname.startsWith(`${path}/`)
   }
 
-  // Define navigation items - all users see all options
-  const navigationItems = [
-    {
-      path: "/dashboard",
-      label: "Dashboard",
-      icon: <BarChart3 />,
-    },
-    {
-      path: "/employees",
-      label: "Employees",
-      icon: <Users />,
-    },
-    {
-      path: "/payroll",
-      label: "Payroll",
-      icon: <ClipboardList />,
-    },
-    {
-      path: "/time-entries",
-      label: "Time Entries",
-      icon: <Calendar />,
-    },
-    {
-      path: "/profile",
-      label: "My Profile",
-      icon: <User />,
-    },
-    {
-      path: "/settings",
-      label: "Settings",
-      icon: <Settings />,
-    },
-  ]
+  // Only show menu items based on user role
+  const canAccessEmployees = user?.role === "admin" || user?.role === "billinghr"
+  const canAccessPayroll = user?.role === "admin" || user?.role === "billinghr"
+  const canAccessSettings = user?.role === "admin"
 
   return (
     <Sidebar collapsible="icon">
@@ -84,16 +55,74 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
-                    <Link href={item.path}>
-                      {item.icon}
-                      <span>{item.label}</span>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/dashboard")} tooltip="Dashboard">
+                  <Link href="/dashboard">
+                    <BarChart3 />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Employee Management - Admin and BillingHR only */}
+              {canAccessEmployees && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/employees")} tooltip="Employees">
+                    <Link href="/employees">
+                      <Users />
+                      <span>Manage Employees</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )}
+
+              {/* Payroll Management - Admin and BillingHR only */}
+              {canAccessPayroll && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/payroll")} tooltip="Payroll">
+                    <Link href="/payroll">
+                      <ClipboardList />
+                      <span>Manage Payroll</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {/* Time Entries - Admin and BillingHR only */}
+              {canAccessPayroll && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/time-entries")} tooltip="Time Entries">
+                    <Link href="/time-entries">
+                      <Calendar />
+                      <span>Time Entries</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {/* Employee can view their own profile */}
+              {user?.role === "employee" && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/profile")} tooltip="My Profile">
+                    <Link href="/profile">
+                      <User />
+                      <span>My Profile</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {/* Settings - Admin only */}
+              {canAccessSettings && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip="Settings">
+                    <Link href="/settings">
+                      <Settings />
+                      <span>Settings</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -106,7 +135,7 @@ export function AppSidebar() {
             </div>
             <div className="flex flex-col">
               <span className="font-medium">{user?.name}</span>
-              <span className="text-xs text-muted-foreground">Admin</span>
+              <span className="text-xs text-muted-foreground capitalize">{user?.role}</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
